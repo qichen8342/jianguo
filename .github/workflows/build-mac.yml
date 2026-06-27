@@ -13,9 +13,14 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: 安装 Python 依赖
         run: |
-          pip3 install pyinstaller openpyxl
+          pip install pyinstaller openpyxl
 
       - name: 打包成 macOS 可执行文件
         run: |
