@@ -7,21 +7,29 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 查看可用 Xcode 版本
+        run: ls /Applications/ | grep Xcode
+
       - name: 选择 Xcode 版本
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+        run: |
+          XCODE=$(ls /Applications/ | grep "^Xcode" | sort -V | tail -1)
+          sudo xcode-select -s "/Applications/${XCODE}"
+          swift --version
 
       - name: 编译 Release 版本
+        working-directory: AppleNotesApp
         run: swift build -c release
 
       - name: 打包成 .app
+        working-directory: AppleNotesApp
         run: |
-          APP_NAME="苹果笔记"
+          APP_NAME="AppleNotesApp"
           BUNDLE="${APP_NAME}.app"
 
           mkdir -p "${BUNDLE}/Contents/MacOS"
@@ -30,7 +38,6 @@ jobs:
           cp .build/release/AppleNotesApp "${BUNDLE}/Contents/MacOS/AppleNotesApp"
           cp Sources/AppleNotesApp/Info.plist "${BUNDLE}/Contents/Info.plist"
 
-          # 压缩成 zip 方便下载
           zip -r "${APP_NAME}.zip" "${BUNDLE}"
           echo "✅ 打包完成：${APP_NAME}.zip"
 
@@ -38,5 +45,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: 苹果笔记-macOS
-          path: 苹果笔记.zip
+          path: AppleNotesApp/AppleNotesApp.zip
           retention-days: 30
