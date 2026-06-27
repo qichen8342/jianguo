@@ -1,0 +1,42 @@
+name: 打包 macOS 应用
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 选择 Xcode 版本
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: 编译 Release 版本
+        run: swift build -c release
+
+      - name: 打包成 .app
+        run: |
+          APP_NAME="苹果笔记"
+          BUNDLE="${APP_NAME}.app"
+
+          mkdir -p "${BUNDLE}/Contents/MacOS"
+          mkdir -p "${BUNDLE}/Contents/Resources"
+
+          cp .build/release/AppleNotesApp "${BUNDLE}/Contents/MacOS/AppleNotesApp"
+          cp Sources/AppleNotesApp/Info.plist "${BUNDLE}/Contents/Info.plist"
+
+          # 压缩成 zip 方便下载
+          zip -r "${APP_NAME}.zip" "${BUNDLE}"
+          echo "✅ 打包完成：${APP_NAME}.zip"
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: 苹果笔记-macOS
+          path: 苹果笔记.zip
+          retention-days: 30
