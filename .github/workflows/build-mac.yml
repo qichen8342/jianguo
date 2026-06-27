@@ -1,0 +1,31 @@
+name: 打包 月度销售统计 macOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python 依赖
+        run: |
+          pip3 install pyinstaller openpyxl
+
+      - name: 打包成 macOS 可执行文件
+        run: |
+          pyinstaller --onefile \
+            --name 月度销售统计 \
+            monthly_report.py
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: 月度销售统计-macOS
+          path: dist/月度销售统计
+          retention-days: 30
